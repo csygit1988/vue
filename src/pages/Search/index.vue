@@ -23,12 +23,15 @@
               <!-- 品牌的面包屑 -->
             <li class="with-x" v-if="searchParams.trademark">
               {{ searchParams.trademark.split(":")[1] }}<i @click="removeTrademark">×</i>
+              <!-- 属性的面包屑 -->
+               <li class="with-x" v-for="(attrValue,index) in searchParams.props" :key="index">
+              {{ attrValue.split(":")[1] }}<i @click="removeAttr">×</i>
             </li>
           </ul>
         </div>
 
         <!--selector-->
-        <SearchSelector @trademarkInfo="trademarkInfo"/>
+        <SearchSelector @trademarkInfo="trademarkInfo" @attrInfo="attrInfo"/>
 
         <!--details-->
         <div class="details clearfix">
@@ -197,11 +200,23 @@ export default {
          this.searchParams.trademark=undefined;
          this.getDate();
     },
+    removeAttr(index){
+         this.searchParams.props.splice(index, 1);
+      //再次发请求
+        this.getDate();
+    },
     // 自定义事件，字传父参数trademark
     trademarkInfo(trademark){
       this.searchParams.trademark=`${trademark.tmId}:${trademark.tmName}`;
       this.getDate();
+    },
+    attrInfo(attr,attrValue){
+        let props=`${attr.attrId}:${attrValue}:${attr.attrName}`;
+        // 数组去重
+        if(this.searchParams.props.indexOf(props)==-1) this.searchParams.props.push(props);
+        this.getDate();
     }
+
   },
   watch: {
     $route(newValue, oldValue) {
