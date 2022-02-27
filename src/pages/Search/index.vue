@@ -11,13 +11,24 @@
             </li>
           </ul>
           <ul class="fl sui-tag">
-            <li class="with-x" v-if="searchParams.categoryName">{{searchParams.categoryName}}
-                <i @click="removeCategoryName">×</i></li>
+                <!-- 分类的面包屑 -->
+            <li class="with-x" v-if="searchParams.categoryName">
+              {{ searchParams.categoryName }}
+              <i @click="removeCategoryName">×</i>
+            </li>
+            <!-- 关键字的面包屑 -->
+            <li class="with-x" v-if="searchParams.keyword">
+              {{ searchParams.keyword }}<i @click="removeKeyword">×</i>
+            </li>
+              <!-- 品牌的面包屑 -->
+            <li class="with-x" v-if="searchParams.trademark">
+              {{ searchParams.trademark.split(":")[1] }}<i @click="removeTrademark">×</i>
+            </li>
           </ul>
         </div>
 
         <!--selector-->
-        <SearchSelector />
+        <SearchSelector @trademarkInfo="trademarkInfo"/>
 
         <!--details-->
         <div class="details clearfix">
@@ -133,6 +144,8 @@ export default {
   data() {
     return {
       searchParams: {
+          category1Id:"",
+          category2Id:"",
         category3Id: "",
         categoryName: "",
         keyword: "",
@@ -148,7 +161,7 @@ export default {
     SearchSelector,
   },
   beforeMount() {
-      Object.assign(this.searchParams,this.$route.query,this.$route.params);
+    Object.assign(this.searchParams, this.$route.query, this.$route.params);
     //  console.log(this.searchParams);
   },
   mounted() {
@@ -160,22 +173,46 @@ export default {
   },
   methods: {
     getDate() {
-      this.$store.dispatch("getSearchInfo",this.searchParams);
+      this.$store.dispatch("getSearchInfo", this.searchParams);
     },
-    removeCategoryName(){
-        alert(123)
+    removeCategoryName() {
+      this.searchParams.categoryName = "";
+      this.searchParams.category1Id = "";
+      this.searchParams.category2Id = "";
+      this.searchParams.category3Id = "";
+      this.getDate();
+      if (this.$route.params) {
+        this.$router.push({ name: "search", params: this.$route.params });
+      }
+    },
+    removeKeyword() {
+      this.searchParams.keyword = undefined;
+      this.$bus.$emit("clear");
+      this.getDate();
+      if (this.$route.query) {
+        this.$router.push({ name: "search", query: this.$route.query });
+      }
+    },
+    removeTrademark(){
+         this.searchParams.trademark=undefined;
+         this.getDate();
+    },
+    // 自定义事件，字传父参数trademark
+    trademarkInfo(trademark){
+      this.searchParams.trademark=`${trademark.tmId}:${trademark.tmName}`;
+      this.getDate();
     }
   },
-  watch:{
-      $route(newValue,oldValue){
-          Object.assign(this.searchParams,this.$route.query,this.$route.params);
-          //console.log(this.searchParams);
-          this.getDate();
-          this.searchParams.category1Id='';
-          this.searchParams.category2Id='';
-          this.searchParams.category3Id='';
-      }
-  }
+  watch: {
+    $route(newValue, oldValue) {
+      Object.assign(this.searchParams, this.$route.query, this.$route.params);
+      //console.log(this.searchParams);
+      this.getDate();
+      this.searchParams.category1Id = "";
+      this.searchParams.category2Id = "";
+      this.searchParams.category3Id = "";
+    },
+  },
 };
 </script>
 
